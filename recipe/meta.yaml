@@ -12,36 +12,59 @@ source:
 build:
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
-  skip: true  # [not linux]
+  skip: true  # [py<39]
 
 requirements:
   build:
     - {{ compiler('cxx') }}
-    - {{ stdlib('c') }}
   host:
     - python
-    - wheel
-    - setuptools
-    - cffi >=1.12.0
     - pip
+    - setuptools
+    - wheel
+    - cffi 1.17.1  # oldest py313
   run:
     - python
     - cffi >=1.12.0
     - certifi >=2024.2.2
+  run_constrained:
+    - markdownify >=1.1.0
+
+# XXX skipped tests where the unittests require proxy and the rest are
+# probing external hosts (often httpbin.org) which won't work for all
+# platforms.
 
 test:
+  source_files:
+    - tests
   imports:
     - curl_cffi
-  commands:
-    - pip check
+    - curl_cffi.const
+    - curl_cffi.requests
+    - curl_cffi.requests.cookies
+    - curl_cffi.requests.errors
+    - curl_cffi.requests.exceptions
+    - curl_cffi.requests.models
+    - curl_cffi.requests.utils
+    - curl_cffi.utils
   requires:
     - pip
+  commands:
+    - pip check
 
 about:
   home: https://github.com/lexiforest/curl_cffi
   summary: libcurl ffi bindings for Python, with impersonation support.
   license: MIT
   license_file: LICENSE
+  license_family: MIT
+  description: |
+    Unlike other pure Python http clients like httpx or requests,
+    curl_cffi can impersonate browsers’ TLS signatures or JA3
+    fingerprints. If you are blocked by some website for no obvious
+    reason, you can give this package a try.
+  doc_url: https://curl-cffi.readthedocs.io
+  dev_url: https://github.com/lexiforest/curl_cffi
 
 extra:
   recipe-maintainers:
