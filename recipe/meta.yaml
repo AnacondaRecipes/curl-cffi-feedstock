@@ -51,11 +51,12 @@ test:
     - pip
     - pytest >=8.1.1,<9.0
     - eventlet
-    - gevent
+    - gevent  # [py<313]
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest {{ ignore_tests }} -v tests
+    # Lack of gevent for py313
+    - pytest {{ ignore_tests }} -v tests  # [py<313]
 
 about:
   home: https://github.com/lexiforest/curl_cffi
