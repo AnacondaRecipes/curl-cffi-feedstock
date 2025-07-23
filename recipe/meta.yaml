@@ -1,5 +1,5 @@
 {% set name = "curl-cffi" %}
-{% set version = "0.11.4" %}
+{% set version = "0.12.1b2" %}
 
 package:
   name: {{ name|lower }}
@@ -7,41 +7,64 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/curl_cffi-{{ version }}.tar.gz
-  sha256: 064ecab44c0571aaf47ad18a97200130f9e05bf7668fe3a2ff8633276fcbbb3c
+  sha256: 9a2d0c9e164c0425e6bd610455e188a1b8e952392f90cef02e794589a7f02c8f
 
 build:
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
-  skip: true  # [not linux]
+  skip: true  # [py<39]
 
 requirements:
   build:
     - {{ compiler('cxx') }}
-    - {{ stdlib('c') }}
   host:
     - python
-    - wheel
-    - setuptools
-    - cffi >=1.12.0
     - pip
+    - setuptools
+    - wheel
+    - cffi 1.17.1  # oldest py313
   run:
     - python
     - cffi >=1.12.0
     - certifi >=2024.2.2
+  run_constrained:
+    - markdownify >=1.1.0
+    - readability-lxml >=0.8.1
 
 test:
+  source_files:
+    - tests
   imports:
     - curl_cffi
-  commands:
-    - pip check
+    - curl_cffi.const
+    - curl_cffi.requests
+    - curl_cffi.requests.cookies
+    - curl_cffi.requests.errors
+    - curl_cffi.requests.exceptions
+    - curl_cffi.requests.models
+    - curl_cffi.requests.utils
+    - curl_cffi.utils
   requires:
     - pip
+    - pytest >=8.1.1,<9.0
+  commands:
+    - pip check
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest -v tests
 
 about:
   home: https://github.com/lexiforest/curl_cffi
   summary: libcurl ffi bindings for Python, with impersonation support.
   license: MIT
   license_file: LICENSE
+  license_family: MIT
+  description: |
+    Unlike other pure Python http clients like httpx or requests,
+    curl_cffi can impersonate browsers’ TLS signatures or JA3
+    fingerprints. If you are blocked by some website for no obvious
+    reason, you can give this package a try.
+  doc_url: https://curl-cffi.readthedocs.io
+  dev_url: https://github.com/lexiforest/curl_cffi
 
 extra:
   recipe-maintainers:
