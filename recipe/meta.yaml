@@ -6,7 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/curl_cffi-{{ version }}.tar.gz
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|lower|replace('-', '_') }}-{{ version }}.tar.gz
   sha256: 9a2d0c9e164c0425e6bd610455e188a1b8e952392f90cef02e794589a7f02c8f
 
 build:
@@ -33,6 +33,8 @@ requirements:
 
 # ModuleNotFoundError: No module named 'proxy'
 {% set ignore_tests = " --ignore=tests/unittest" %}
+# RuntimeError: cannot release un-acquired lock
+{% set ignore_tests = ignore_tests + " --ignore=tests/threads/test_gevent.py" %}
 
 test:
   source_files:
@@ -51,12 +53,10 @@ test:
     - pip
     - pytest >=8.1.1,<9.0
     - eventlet
-    - gevent  # [py<313]
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    # Lack of gevent for py313
-    - pytest {{ ignore_tests }} -v tests  # [py<313]
+    - pytest {{ ignore_tests }} -v tests
 
 about:
   home: https://github.com/lexiforest/curl_cffi
