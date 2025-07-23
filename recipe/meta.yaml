@@ -31,6 +31,9 @@ requirements:
     - markdownify >=1.1.0
     - readability-lxml >=0.8.1
 
+# ModuleNotFoundError: No module named 'proxy'
+{% set ignore_tests = " --ignore=tests/unittest" %}
+
 test:
   source_files:
     - tests
@@ -47,10 +50,12 @@ test:
   requires:
     - pip
     - pytest >=8.1.1,<9.0
+    - eventlet
+    - gevent
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest -v tests
+    - pytest {{ ignore_tests }} -v tests
 
 about:
   home: https://github.com/lexiforest/curl_cffi
