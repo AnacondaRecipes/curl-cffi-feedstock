@@ -30,13 +30,11 @@ source:
       - patches/0001-use-downloaded-curl-impersonate.patch
 
 build:
-  script: 
-  # - export LDFLAGS="??"
-  - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
   skip: true  # [py<39]
-  # script_env:
-  #   - LDFLAGS=-L${PREFIX}
+  script_env:
+    - LIBDIR_PATH=$SRC_DIR/libdir
 
 requirements:
   build:
