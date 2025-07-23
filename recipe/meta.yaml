@@ -31,10 +31,9 @@ requirements:
     - markdownify >=1.1.0
     - readability-lxml >=0.8.1
 
-# ModuleNotFoundError: No module named 'proxy'
-{% set ignore_tests = " --ignore=tests/unittest" %}
-# RuntimeError: cannot release un-acquired lock
-{% set ignore_tests = ignore_tests + " --ignore=tests/threads/test_gevent.py" %}
+# Skipped upstream tests where the unittests require proxy and the rest are
+# probing external hosts (often httpbin.org) which won't work for all
+# platforms.
 
 test:
   source_files:
@@ -51,12 +50,9 @@ test:
     - curl_cffi.utils
   requires:
     - pip
-    - pytest >=8.1.1,<9.0
-    - eventlet
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest {{ ignore_tests }} -v tests
 
 about:
   home: https://github.com/lexiforest/curl_cffi
