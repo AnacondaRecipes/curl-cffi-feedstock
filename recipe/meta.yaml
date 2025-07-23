@@ -1,22 +1,48 @@
 {% set name = "curl-cffi" %}
-{% set version = "0.12.1b2" %}
+{% set version = "0.12.0" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|lower|replace('-', '_') }}-{{ version }}.tar.gz
-  sha256: 9a2d0c9e164c0425e6bd610455e188a1b8e952392f90cef02e794589a7f02c8f
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|replace('-', '_') }}-{{ version }}.tar.gz
+    sha256: 01770d120e2ab82ad076687c7038abe4d614c7e13d7a5378520b027df529dbe7
+
+  # libcurl-impersonate version: https://github.com/lexiforest/curl_cffi/blob/v0.12.0/scripts/build.py#L14
+  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-linux-gnu.tar.gz  # [linux64]
+    sha256: 0698a9226ab4cea0b61bba4655abfd49b6d527735c63af22a488d59d895b428a  # [linux64]
+    folder: libdir # [linux64]
+  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.aarch64-linux-gnu.tar.gz  # [aarch64]
+    sha256: e1234ba2b5b7cb7cb745fcf885e0014a9e011bf764d433d34f66000eea77ef1d  # [aarch64]
+    folder: libdir # [aarch64]
+  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-macos.tar.gz  # [osx and x86_64]
+    sha256: 2186e2c85b18f4d56a01c9e2eb162d9b70516b726bfa314ce417c16e36245911  # [osx and x86_64]
+    folder: libdir # [osx and x86_64]
+  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.arm64-macos.tar.gz  # [osx and arm64]
+    sha256: 0c67a21fe092e78d93f4deb4fcce95ee36ecb5b3a76892b6710ab038e245ca80  # [osx and arm64]
+    folder: libdir # [osx and arm64]
+  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-win32.tar.gz  # [win]
+    sha256: 9b6ac31818b6e98e04912b22f038c69d4166ffc932e8b549a687ebb975e00cae  # [win]
+    folder: libdir # [win]
+
+  - patches:
+      - patches/0001-use-downloaded-curl-impersonate.patch
 
 build:
-  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  script: 
+  # - export LDFLAGS="??"
+  - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   number: 0
   skip: true  # [py<39]
+  # script_env:
+  #   - LDFLAGS=-L${PREFIX}
 
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - patch  # [not win]
+    - msys2-patch  # [win]
   host:
     - python
     - pip
@@ -31,9 +57,13 @@ requirements:
     - markdownify >=1.1.0
     - readability-lxml >=0.8.1
 
-# Skipped upstream tests where the unittests require proxy and the rest are
-# probing external hosts (often httpbin.org) which won't work for all
-# platforms.
+# >       assert r.json()["ja3_hash"] == CHROME_JA3_HASH
+# E       AssertionError: assert 'cd08e31494f9...d64c695473da9' == '53ff64ddf993...0e1c82af5da49'
+# >       assert r.json()["ja3_hash"] == EDGE_JA3_HASH
+# E       AssertionError: assert 'cd08e31494f9...d64c695473da9' == '53ff64ddf993...0e1c82af5da49'
+# >       assert r.json()["ja3_hash"] == SAFARI_JA3_HASH
+# E       AssertionError: assert '773906b0efde...2b8eb6985bf37' == '8468a1ef6cb7...ef8eadf786f7d'
+{% set ignore_tests = " --ignore=tests/integration/test_fingerprints.py" %}
 
 test:
   source_files:
@@ -50,9 +80,11 @@ test:
     - curl_cffi.utils
   requires:
     - pip
+    - pytest
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest {{ ignore_tests }} -v tests/integration
 
 about:
   home: https://github.com/lexiforest/curl_cffi

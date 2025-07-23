@@ -1,0 +1,25 @@
+From d9a002d9c1503a802ba8d0f71b24ece930519711 Mon Sep 17 00:00:00 2001
+From: Patryk Kups <pkups@anaconda.com>
+Date: Wed, 23 Jul 2025 15:07:03 +0200
+Subject: [PATCH] patch new
+
+---
+ scripts/build.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/build.py b/scripts/build.py
+index 58ec45b..7ef2024 100644
+--- a/scripts/build.py
++++ b/scripts/build.py
+@@ -138,7 +138,7 @@ def get_curl_libraries():
+ ffibuilder = FFI()
+ system = platform.system()
+ root_dir = Path(__file__).parent.parent
+-download_libcurl()
++# download_libcurl()
+ 
+ 
+ ffibuilder.set_source(
+-- 
+2.39.5 (Apple Git-154)
+
