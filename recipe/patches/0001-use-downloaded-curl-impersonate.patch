@@ -1,14 +1,14 @@
-From 4b80e979395427c563a57cc71f1fc7987c8c19c8 Mon Sep 17 00:00:00 2001
+From 05747ab07c4ded805058d340209c8b1a550e610c Mon Sep 17 00:00:00 2001
 From: Patryk Kups <pkups@anaconda.com>
-Date: Thu, 24 Jul 2025 12:57:11 +0200
-Subject: [PATCH] path3
+Date: Thu, 24 Jul 2025 19:33:40 +0200
+Subject: [PATCH] patch
 
 ---
- scripts/build.py | 21 ++++++++++++++++-----
- 1 file changed, 16 insertions(+), 5 deletions(-)
+ scripts/build.py | 31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
 
 diff --git a/scripts/build.py b/scripts/build.py
-index 58ec45b..f453b55 100644
+index 58ec45b..22e410a 100644
 --- a/scripts/build.py
 +++ b/scripts/build.py
 @@ -34,7 +34,7 @@ def detect_arch():
@@ -31,7 +31,7 @@ index 58ec45b..f453b55 100644
              return arch
      raise Exception(f"Unsupported arch: {uname}")
  
-@@ -138,8 +138,19 @@ def get_curl_libraries():
+@@ -138,8 +138,27 @@ def get_curl_libraries():
  ffibuilder = FFI()
  system = platform.system()
  root_dir = Path(__file__).parent.parent
@@ -48,11 +48,28 @@ index 58ec45b..f453b55 100644
 +    for file in glob(os.path.join(arch["libdir"], "bin/*.dll")):
 +        shutil.move(file, arch["libdir"])
 +
-+print("conda-build downloaded curl-impersonate binaries:")
-+print(os.listdir(arch["libdir"]))
++rpath_dir = os.environ["RPATH_DIR"]
++extra_link_args = []
++
++if arch["system"] == "Darwin":
++    extra_link_args.extend([
++        f"-Wl,-rpath,{rpath_dir}",
++        "-lstdc++"
++    ])
++elif arch["system"] != "Windows":
++    extra_link_args.append("-lstdc++")
  
  ffibuilder.set_source(
      "curl_cffi._wrapper",
+@@ -161,7 +180,7 @@ ffibuilder.set_source(
+     extra_compile_args=(
+         ["-Wno-implicit-function-declaration"] if system == "Darwin" else []
+     ),
+-    extra_link_args=(["-lstdc++"] if system != "Windows" else []),
++    extra_link_args=extra_link_args,
+ )
+ 
+ with open(root_dir / "ffi/cdef.c") as f:
 -- 
 2.39.5 (Apple Git-154)
 
