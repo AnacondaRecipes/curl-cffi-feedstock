@@ -33,7 +33,10 @@ build:
   number: 0
   skip: true  # [py<39]
   script_env:
-    - LIBDIR_PATH=$SRC_DIR/libdir
+    - LIBDIR_PATH=$SRC_DIR/libdir  # [unix]
+    - LIBDIR_PATH=%SRC_DIR%\libdir  # [win]
+  missing_dso_whitelist:  # [osx]
+    - "*/libcurl-impersonate.4.dylib"  # [osx]
 
 requirements:
   build:
@@ -81,7 +84,7 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    # tests/unittest and tests/threads cannot be invoked due to lack of 'proxy' and 'gevent' dependencies
+    # tests/unittest and tests/threads cannot be invoked due to lack of 'proxy' and '' dependencies
     - pytest {{ ignore_tests }} -v tests/integration
 
 about:
