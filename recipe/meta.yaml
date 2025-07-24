@@ -38,6 +38,8 @@ source:
 build:
   script:
     - install_name_tool -id @rpath/libcurl-impersonate.4.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx]
+    - install_name_tool -change /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib
+    - install_name_tool -change /opt/homebrew/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib
     - mkdir $RPATH_DIR  # [osx]
     - cp $LIBDIR_PATH/libcurl-impersonate.4.dylib $RPATH_DIR  # [osx]
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
@@ -50,8 +52,8 @@ build:
     - RPATH_DIR=$SP_DIR/extralib  # [osx]
   missing_dso_whitelist:  # [osx]
     - "*/librtmp.1.dylib"  # [osx]
-    - "*/libidn2.0.dylib"  # [osx]
-    - "*/libzstd.1.dylib"  # [osx]
+    # - "*/libidn2.0.dylib"  # [osx]
+    # - "*/libzstd.1.dylib"  # [osx]
   # ignore_run_exports:  # [osx]
     # - libidn2  # [osx]
     # - zstd  # [osx]
