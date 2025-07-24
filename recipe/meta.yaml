@@ -42,11 +42,21 @@ source:
 #         /opt/homebrew/opt/zstd/lib/libzstd.1.dylib (compatibility version 1.0.0, current version 1.5.7)
 # (...)
 
+# > otool -L libcurl-impersonate-v1.1.0.x86_64-macos/libcurl-impersonate.4.dylib 
+# libcurl-impersonate-v1.1.0.x86_64-macos/libcurl-impersonate.4.dylib:
+#         /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib (compatibility version 13.0.0, current version 13.0.0)
+#         /usr/local/opt/libidn2/lib/libidn2.0.dylib (compatibility version 5.0.0, current version 5.0.0)
+#         /usr/local/opt/rtmpdump/lib/librtmp.1.dylib (compatibility version 0.0.0, current version 0.0.0)
+#         /usr/local/opt/zstd/lib/libzstd.1.dylib (compatibility version 1.0.0, current version 1.5.7)
+
 build:
   script:
     - install_name_tool -id @rpath/libcurl-impersonate.4.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx]
     - install_name_tool -change /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
     - install_name_tool -change /opt/homebrew/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
+    - install_name_tool -change /usr/local/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
+    - install_name_tool -change /usr/local/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
+    - install_name_tool -change /usr/local/opt/rtmpdump/lib/librtmp.1.dylib $PREFIX/lib/librtmp.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
     - mkdir $RPATH_DIR  # [osx]
     - cp $LIBDIR_PATH/libcurl-impersonate.4.dylib $RPATH_DIR  # [osx]
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
@@ -57,14 +67,8 @@ build:
     - LIBDIR_PATH=$SRC_DIR/libdir  # [unix]
     - LIBDIR_PATH=%SRC_DIR%\libdir  # [win]
     - RPATH_DIR=$SP_DIR/extralib  # [osx]
-  missing_dso_whitelist:  # [osx]
-    - "*/librtmp.1.dylib"  # [osx]
-    # - "*/libidn2.0.dylib"  # [osx]
-    # - "*/libzstd.1.dylib"  # [osx]
-  # ignore_run_exports:  # [osx]
-    # - libidn2  # [osx]
-    # - zstd  # [osx]
-    # - libcxx  # [osx]
+  missing_dso_whitelist:  # [osx and x86_64]
+    - "*/librtmp.1.dylib"  # [osx and x86_64]
 
 requirements:
   build:
@@ -78,8 +82,8 @@ requirements:
     - wheel
     - cffi 1.17.1  # oldest py313
     # libcurl-impersonate.4.dylib has dynamic dependencies to libidn2/zstd
-    - libidn2  # [osx]
-    - zstd  # [osx]
+    - libidn2 {{ libidn2 }}  # [osx]
+    - zstd {{ zstd }}  # [osx]
   run:
     - python
     - cffi >=1.12.0
