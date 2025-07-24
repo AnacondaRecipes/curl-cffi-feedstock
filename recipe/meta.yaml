@@ -68,8 +68,8 @@ requirements:
     - wheel
     - cffi 1.17.1  # oldest py313
     # libcurl-impersonate.4.dylib has dynamic dependencies to libidn2/zstd
-    # - libidn2  # [osx]
-    # - zstd  # [osx]
+    - libidn2  # [osx]
+    - zstd  # [osx]
   run:
     - python
     - cffi >=1.12.0
