@@ -49,8 +49,9 @@ build:
     - LIBDIR_PATH=%SRC_DIR%\libdir  # [win]
     - RPATH_DIR=$SP_DIR/extralib  # [osx]
   missing_dso_whitelist:
-    - "*/libidn2.0.dylib"
-    - "*/libzstd.1.dylib"
+    - "*/librtmp.1.dylib"
+    # - "*/libidn2.0.dylib"
+    # - "*/libzstd.1.dylib"
   # ignore_run_exports:  # [osx]
     # - libidn2  # [osx]
     # - zstd  # [osx]
