@@ -35,11 +35,18 @@ source:
 # /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib <-- this path is hardcoded in downloaded lib
 # This path overrides RPATH when system looks for lib, 'install_name_tool -id' is used to update this hardcoded path.
 
+# > otool -L libcurl-impersonate-v1.1.0.arm64-macos/libcurl-impersonate.4.dylib 
+# libcurl-impersonate-v1.1.0.arm64-macos/libcurl-impersonate.4.dylib:
+#         /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib (compatibility version 13.0.0, current version 13.0.0)
+#         /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib (compatibility version 5.0.0, current version 5.0.0)
+#         /opt/homebrew/opt/zstd/lib/libzstd.1.dylib (compatibility version 1.0.0, current version 1.5.7)
+# (...)
+
 build:
   script:
     - install_name_tool -id @rpath/libcurl-impersonate.4.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx]
-    - install_name_tool -change /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib
-    - install_name_tool -change /opt/homebrew/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib
+    - install_name_tool -change /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
+    - install_name_tool -change /opt/homebrew/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
     - mkdir $RPATH_DIR  # [osx]
     - cp $LIBDIR_PATH/libcurl-impersonate.4.dylib $RPATH_DIR  # [osx]
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
