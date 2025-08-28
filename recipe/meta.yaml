@@ -19,7 +19,13 @@ build:
     - LIBDIR_PATH=$PREFIX/lib/ # [unix]
     - LIBDIR_PATH=%PREFIX%\\Library  # [win]
   ignore_run_exports:
-    - libcxx
+    - zlib  # [win]
+  missing_dso_whitelist:
+    - $RPATH/api-ms-win-core-winrt-error-l1-1-0.dll   # [win]
+    - $RPATH/api-ms-win-core-winrt-l1-1-0.dll         # [win]
+    - $RPATH/api-ms-win-core-winrt-string-l1-1-0.dll  # [win]
+    - $RPATH/libcrypto-3-x64.dll  # [win]
+    - $RPATH/zstd.dll  # [win]
 
 requirements:
   build:
@@ -61,7 +67,7 @@ test:
     # tests/threads -> RuntimeError: cannot release un-acquired lock
     # tests/integration failing due to failing hash assertion and requests to https://httpbin.org/
     - test -f $SP_DIR/curl_cffi/_wrapper.abi3.so  # [unix]
-    - if not exist %SP_DIR%\\curl_cffi\\_wrapper.lib exit 1  # [win]
+    - if not exist %SP_DIR%\\curl_cffi\\_wrapper.pyd exit 1  # [win]
     
 about:
   home: https://github.com/lexiforest/curl_cffi
