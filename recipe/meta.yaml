@@ -1,89 +1,36 @@
 {% set name = "curl-cffi" %}
-{% set version = "0.12.0" %}
+{% set version = "0.13.0" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|replace('-', '_') }}-{{ version }}.tar.gz
-    sha256: 01770d120e2ab82ad076687c7038abe4d614c7e13d7a5378520b027df529dbe7
-    patches:
-      - patches/0001-use-downloaded-curl-impersonate.patch
-
-  # libcurl-impersonate version: https://github.com/lexiforest/curl_cffi/blob/v0.12.0/scripts/build.py#L14
-  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-linux-gnu.tar.gz  # [linux64]
-    sha256: 0698a9226ab4cea0b61bba4655abfd49b6d527735c63af22a488d59d895b428a  # [linux64]
-    folder: libdir # [linux64]
-  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.aarch64-linux-gnu.tar.gz  # [aarch64]
-    sha256: e1234ba2b5b7cb7cb745fcf885e0014a9e011bf764d433d34f66000eea77ef1d  # [aarch64]
-    folder: libdir # [aarch64]
-  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-macos.tar.gz  # [osx and x86_64]
-    sha256: 2186e2c85b18f4d56a01c9e2eb162d9b70516b726bfa314ce417c16e36245911  # [osx and x86_64]
-    folder: libdir # [osx and x86_64]
-  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.arm64-macos.tar.gz  # [osx and arm64]
-    sha256: 0c67a21fe092e78d93f4deb4fcce95ee36ecb5b3a76892b6710ab038e245ca80  # [osx and arm64]
-    folder: libdir # [osx and arm64]
-  - url: https://github.com/lexiforest/curl-impersonate/releases/download/v1.1.0/libcurl-impersonate-v1.1.0.x86_64-win32.tar.gz  # [win]
-    sha256: 9b6ac31818b6e98e04912b22f038c69d4166ffc932e8b549a687ebb975e00cae  # [win]
-    folder: libdir # [win]
-
-# MACOS: _wrapper.abi3.so produced during building has dynamic dependency to libcurl-impersonate.4.dylib
-# downloaded 'libcurl-impersonate.4.dylib' has hardcoded install name, which is a path embedded in the library itself.
-# This path tells the dynamic linker where to expect the library to be located when other binaries try to use it.
-# > otool -D libcurl-impersonate.4.dylib
-# /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib <-- this path is hardcoded in downloaded lib
-# This path overrides RPATH when system looks for lib, 'install_name_tool -id' is used to update this hardcoded path.
-
-# > otool -L libcurl-impersonate-v1.1.0.arm64-macos/libcurl-impersonate.4.dylib 
-# libcurl-impersonate-v1.1.0.arm64-macos/libcurl-impersonate.4.dylib:
-#         /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib (compatibility version 13.0.0, current version 13.0.0)
-#         /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib (compatibility version 5.0.0, current version 5.0.0)
-#         /opt/homebrew/opt/zstd/lib/libzstd.1.dylib (compatibility version 1.0.0, current version 1.5.7)
-# (...)
-
-# > otool -L libcurl-impersonate-v1.1.0.x86_64-macos/libcurl-impersonate.4.dylib 
-# libcurl-impersonate-v1.1.0.x86_64-macos/libcurl-impersonate.4.dylib:
-#         /Users/runner/work/_temp/install/lib/libcurl-impersonate.4.dylib (compatibility version 13.0.0, current version 13.0.0)
-#         /usr/local/opt/libidn2/lib/libidn2.0.dylib (compatibility version 5.0.0, current version 5.0.0)
-#         /usr/local/opt/rtmpdump/lib/librtmp.1.dylib (compatibility version 0.0.0, current version 0.0.0)
-#         /usr/local/opt/zstd/lib/libzstd.1.dylib (compatibility version 1.0.0, current version 1.5.7)
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|replace('-', '_') }}-{{ version }}.tar.gz
+  sha256: 62ecd90a382bd5023750e3606e0aa7cb1a3a8ba41c14270b8e5e149ebf72c5ca
+  patches:
+    - patches/0001-unvendor-curl-impersonate.patch
 
 build:
-  script:
-    - install_name_tool -id @rpath/libcurl-impersonate.4.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx]
-    - install_name_tool -change /opt/homebrew/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
-    - install_name_tool -change /opt/homebrew/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and arm64]
-    - install_name_tool -change /usr/local/opt/libidn2/lib/libidn2.0.dylib $PREFIX/lib/libidn2.0.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
-    - install_name_tool -change /usr/local/opt/zstd/lib/libzstd.1.dylib $PREFIX/lib/libzstd.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
-    - install_name_tool -change /usr/local/opt/rtmpdump/lib/librtmp.1.dylib $PREFIX/lib/librtmp.1.dylib $LIBDIR_PATH/libcurl-impersonate.4.dylib  # [osx and x86_64]
-    - mkdir $RPATH_DIR  # [osx]
-    - cp $LIBDIR_PATH/libcurl-impersonate.4.dylib $RPATH_DIR  # [osx]
-    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-
   number: 0
   skip: true  # [py<39]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   script_env:
-    - LIBDIR_PATH=$SRC_DIR/libdir  # [unix]
-    - LIBDIR_PATH=%SRC_DIR%\libdir  # [win]
-    - RPATH_DIR=$SP_DIR/extralib  # [osx]
-  missing_dso_whitelist:  # [osx and x86_64]
-    - "*/librtmp.1.dylib"  # [osx and x86_64]
+    - LIBDIR_PATH=$PREFIX/lib/ # [unix]
+    - LIBDIR_PATH=%PREFIX%\\Library  # [win]
+  ignore_run_exports:
+    - libcxx
 
 requirements:
   build:
     - {{ compiler('cxx') }}
-    - patch  # [not win]
-    - msys2-patch  # [win]
   host:
     - python
     - pip
     - setuptools
     - wheel
     - cffi 1.17.1  # oldest py313
-    # libcurl-impersonate.4.dylib has dynamic dependencies to libidn2/zstd
-    - libidn2 {{ libidn2 }}  # [osx]
-    - zstd {{ zstd }}  # [osx]
+    - curl-impersonate 1.2.0
   run:
     - python
     - cffi >=1.12.0
@@ -108,9 +55,12 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    # Cannot run upstream tests. tests/unittest and tests/threads cannot be invoked due to lack of 'proxy' and 'gevent' dependencies
+    # Cannot run upstream tests. tests/unittest cannot be invoked due to lack of 'proxy' dependencies
+    # tests/threads -> RuntimeError: cannot release un-acquired lock
     # tests/integration failing due to failing hash assertion and requests to https://httpbin.org/
-
+    - test -f $SP_DIR/curl_cffi/_wrapper.abi3.so  # [unix]
+    - if not exist %SP_DIR%\\curl_cffi\\_wrapper.lib exit 1  # [win]
+    
 about:
   home: https://github.com/lexiforest/curl_cffi
   summary: libcurl ffi bindings for Python, with impersonation support.
@@ -128,6 +78,3 @@ about:
 extra:
   recipe-maintainers:
     - jan-janssen
-  skip-lints:
-    # linter doesn't recognize msys2-patch
-    - patch_must_be_in_build
