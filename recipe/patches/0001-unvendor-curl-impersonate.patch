@@ -1,14 +1,14 @@
-From 03a09bde068d24a01cc1e61a65130ccf82afaceb Mon Sep 17 00:00:00 2001
+From 06934a1c742af772b1b9d869ae73d8948565043e Mon Sep 17 00:00:00 2001
 From: Patryk Kups <pkups@anaconda.com>
-Date: Mon, 25 Aug 2025 13:52:50 +0200
+Date: Thu, 28 Aug 2025 17:25:38 +0200
 Subject: [PATCH] patch
 
 ---
- scripts/build.py | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ scripts/build.py | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/scripts/build.py b/scripts/build.py
-index ef555eb..90c293a 100644
+index ef555eb..826918e 100644
 --- a/scripts/build.py
 +++ b/scripts/build.py
 @@ -34,7 +34,7 @@ def detect_arch():
@@ -20,33 +20,22 @@ index ef555eb..90c293a 100644
              else:
                  global tmpdir
                  if "CI" in os.environ:
-@@ -42,8 +42,8 @@ def detect_arch():
+@@ -42,8 +42,7 @@ def detect_arch():
                      os.makedirs(tmpdir, exist_ok=True)
                      arch["libdir"] = tmpdir
                  else:
 -                    tmpdir = tempfile.TemporaryDirectory()
 -                    arch["libdir"] = tmpdir.name
-+                    # tmpdir = tempfile.TemporaryDirectory()
 +                    arch["libdir"] = os.environ["LIBDIR_PATH"]
              return arch
      raise Exception(f"Unsupported arch: {uname}")
  
-@@ -139,8 +139,16 @@ def get_curl_libraries():
+@@ -139,8 +138,6 @@ def get_curl_libraries():
  ffibuilder = FFI()
  system = platform.system()
  root_dir = Path(__file__).parent.parent
 -download_libcurl()
 -
-+# download_libcurl()
-+
-+# The following code is part of the download_libcurl() function.
-+# It ensures that all binaries are placed directly in the libdir, instead of subdirectories like libdir/lib or libdir/bin.
-+# This ensures that the Windows linker has everything it needs in a single directory: arch["libdir"]
-+if arch["system"] == "Windows":
-+    for file in glob(os.path.join(arch["libdir"], "lib/*.lib")):
-+        shutil.move(file, arch["libdir"])
-+    for file in glob(os.path.join(arch["libdir"], "bin/*.dll")):
-+        shutil.move(file, arch["libdir"])
  
  ffibuilder.set_source(
      "curl_cffi._wrapper",
