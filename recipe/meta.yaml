@@ -23,6 +23,7 @@ build:
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('cxx') }}
   host:
     - python
@@ -35,6 +36,7 @@ requirements:
     - python
     - cffi >=1.12.0
     - certifi >=2024.2.2
+    - curl-impersonate # pinned by run_exports
   run_constrained:
     - markdownify >=1.1.0
     - readability-lxml >=0.8.1
